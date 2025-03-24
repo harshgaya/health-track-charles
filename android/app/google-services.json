@@ -1,0 +1,46 @@
+{
+  "project_info": {
+    "project_number": "838157311999",
+    "project_id": "health-tracker-5d0d9",
+    "storage_bucket": "health-tracker-5d0d9.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:838157311999:android:fb994ec4c9dae2cf8291ca",
+        "android_client_info": {
+          "package_name": "com.fitness.fitness_health_tracker_charles.fitness_health_tracker"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "838157311999-h58375a8ncc8r38eok7r8qrvvjl052ek.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyABAWM3e6eBIWIHbSFhI425XyXJ9V8Z1xE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "838157311999-h58375a8ncc8r38eok7r8qrvvjl052ek.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "838157311999-29cq8c8qop203dj8huc8rvpnkqsi6l7e.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.fitness.fitnesshealthtrackercharles.fitnessHealthTracker"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

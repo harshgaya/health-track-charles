@@ -1,0 +1,2 @@
+/Users/harshkumar/StudioProjects/fitness_health_tracker/android/app/.cxx/Debug/2r6u1a2p/x86/CMakeFiles/rebuild_cache.dir
+/Users/harshkumar/StudioProjects/fitness_health_tracker/android/app/.cxx/Debug/2r6u1a2p/x86/CMakeFiles/edit_cache.dir
