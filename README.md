@@ -1,16 +1,80 @@
-# fitness_health_tracker
+# Flutter App
 
-A new Flutter project.
+## Introduction
+This is a Flutter application that runs on Android, iOS, and the web.
 
-## Getting Started
+## Prerequisites
+Before running the app, ensure you have the following installed:
+- [Flutter SDK](https://flutter.dev/docs/get-started/install)
+- Android Studio (for Android development)
+- Xcode (for iOS development on macOS)
+- VS Code or any preferred IDE
 
-This project is a starting point for a Flutter application.
+## Installation
+1. Clone the repository:
+   ```sh
+   git clone https://github.com/your-repository.git
+   cd your-repository
+   ```
+2. Install dependencies:
+   ```sh
+   flutter pub get
+   ```
 
-A few resources to get you started if this is your first Flutter project:
+## Running the App
+To run the app on an emulator or connected device:
+```sh
+flutter run
+```
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
+## Building the App
+- Debug APK:
+  ```sh
+  flutter build apk
+  ```
+- Release APK:
+  ```sh
+  flutter build apk --release
+  ```
+- iOS Build:
+  ```sh
+  flutter build ios
+  ```
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+## Additional Setup
+### Running on an iOS Device
+1. Open the iOS project in Xcode:
+   ```sh
+   open ios/Runner.xcworkspace
+   ```
+2. Select your development team in **Signing & Capabilities**.
+3. Run the app on an iOS device or simulator.
+
+### Running on an Android Device
+1. Enable **Developer Options** and **USB Debugging** on your Android device.
+2. Connect the device via USB and run:
+   ```sh
+   flutter devices
+   flutter run
+   ```
+
+### Running Tests
+To run unit tests:
+```sh
+flutter test
+```
+
+To run integration tests:
+```sh
+flutter drive --target=test_driver/app.dart
+```
+
+## Features
+- Cross-platform support
+- Hot reload for fast development
+- Custom UI components
+- State management support
+- API integration support
+
+## License
+This project is licensed under the MIT License.
