@@ -8,6 +8,7 @@ import 'package:fitness_health_tracker/modules/auth/pages/goal_track.dart';
 import 'package:fitness_health_tracker/modules/auth/pages/height_track.dart';
 import 'package:fitness_health_tracker/modules/auth/pages/login_signup.dart';
 import 'package:fitness_health_tracker/modules/auth/pages/wight_track.dart';
+import 'package:fitness_health_tracker/modules/dashboard/pages/home_page.dart';
 import 'package:fitness_health_tracker/modules/dashboard/pages/user_dashboard.dart';
 import 'package:flutter/material.dart';
 
@@ -89,23 +90,31 @@ class _CheckUserStateState extends State<CheckUserState> {
 
                 if (userSnapshot.hasData && userSnapshot.data!.exists) {
                   var userData = userSnapshot.data!;
+                  print('user data ${userData.data()}');
                   String weight = userData['weight'] ?? '';
                   String height = userData['height'] ?? '';
                   String dob = userData['dob'] ?? '';
                   String goal = userData['goal'] ?? '';
 
                   if (weight.isEmpty) {
+                    print('weight');
                     return const WeightTrack();
                   } else if (height.isEmpty) {
+                    print('height');
                     return const HeightRuler();
                   } else if (dob.isEmpty) {
+                    print('dob');
                     return const DobTracker();
                   } else if (goal.isEmpty) {
+                    print('goal');
                     return const GoalSelectionPage();
                   } else {
-                    return const UserDashboard();
+                    print('homepage');
+                    // return const UserDashboard();
+                    return const HomePage();
                   }
                 } else {
+                  print('login');
                   return const LoginSignup();
                 }
               },

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../helpers/colors.dart';
+import '../../../helpers/utils.dart';
 
 class AddPlateButton extends StatelessWidget {
   final VoidCallback onClick;
@@ -8,22 +9,34 @@ class AddPlateButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    double screenWidth = MediaQuery.of(context).size.width;
+    double screenHeight = MediaQuery.of(context).size.height;
+
+    // Adaptive values
+    double iconSize = screenWidth * 0.05; // Icon scales with screen width
+    double fontSize = screenWidth * 0.04; // Text scales with width
+    double spacing = screenWidth * 0.025; // Adjust spacing
+    double paddingV = screenHeight * 0.01; // Vertical padding
+    double paddingH = screenWidth * 0.03; // Horizontal padding
+
     return Theme.of(context).brightness == Brightness.dark
         ? InkWell(
             onTap: onClick,
-            child: const Row(
+            child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Icon(
                   Icons.add_circle_outline,
-                  color: Color(AppColors.appButtonColorDarkMode),
+                  color: const Color(AppColors.appButtonColorDarkMode),
+                  size: Utils.isTablet(context) ? 20 : iconSize,
                 ),
-                SizedBox(width: 10),
+                SizedBox(width: spacing),
                 Text(
                   'Add Plate',
                   style: TextStyle(
-                    color: Color(AppColors.appButtonColorDarkMode),
+                    color: const Color(AppColors.appButtonColorDarkMode),
                     fontWeight: FontWeight.w500,
+                    fontSize: Utils.isTablet(context) ? 20 : fontSize,
                   ),
                 )
               ],
@@ -31,20 +44,19 @@ class AddPlateButton extends StatelessWidget {
           )
         : OutlinedButton(
             style: OutlinedButton.styleFrom(
-              backgroundColor: Colors.white,
+              backgroundColor: Colors.transparent,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(10),
               ),
               side: const BorderSide(
                   color: Colors.transparent), // Remove default border
             ),
-            onPressed: () {
-              onClick();
-            },
+            onPressed: onClick,
             child: Container(
-              padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
+              padding: EdgeInsets.symmetric(
+                  vertical: paddingV, horizontal: paddingH),
               decoration: Theme.of(context).brightness == Brightness.dark
-                  ? BoxDecoration()
+                  ? const BoxDecoration()
                   : BoxDecoration(
                       color: Colors.white,
                       borderRadius: BorderRadius.circular(10),
@@ -57,19 +69,21 @@ class AddPlateButton extends StatelessWidget {
                         ),
                       ],
                     ),
-              child: const Row(
+              child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Icon(
                     Icons.add_circle_outline,
-                    color: Color(AppColors.skyColor),
+                    color: const Color(AppColors.skyColor),
+                    size: Utils.isTablet(context) ? 20 : iconSize,
                   ),
-                  SizedBox(width: 10),
+                  SizedBox(width: spacing),
                   Text(
                     'Add Plate',
                     style: TextStyle(
-                      color: Color(AppColors.skyColor),
+                      color: const Color(AppColors.skyColor),
                       fontWeight: FontWeight.w500,
+                      fontSize: Utils.isTablet(context) ? 20 : fontSize,
                     ),
                   )
                 ],

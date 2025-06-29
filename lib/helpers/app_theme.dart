@@ -6,7 +6,7 @@ class AppThemes {
   static final lightTheme = ThemeData(
     brightness: Brightness.light,
     primaryColor: Colors.blue,
-    scaffoldBackgroundColor: const Color(0xFFFFFFFF),
+    scaffoldBackgroundColor: const Color(0xFFE8F4F8),
     progressIndicatorTheme: const ProgressIndicatorThemeData(
         color: Color(AppColors.appButtonColorDarkMode)),
     appBarTheme: const AppBarTheme(

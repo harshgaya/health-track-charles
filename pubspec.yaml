@@ -16,6 +16,7 @@ dependencies:
   cupertino_icons: ^1.0.2
   get: ^4.6.6
   http: ^1.2.0
+  win32: ^5.2.0
   shared_preferences: ^2.2.1
   google_fonts: ^5.1.0
   flutter_ruler_picker: ^1.0.6
@@ -31,11 +32,25 @@ dependencies:
   scroll_date_picker: ^3.8.0
   firebase_storage: ^11.6.9
   image_picker: ^1.0.8
-  flutter_local_notifications: ^9.9.1
+  flutter_local_notifications: ^19.0.0
   file: ^6.1.4
   sqflite: ^2.3.1
   dotted_border: ^2.1.0
   connectivity_plus: ^5.0.2
+  firebase_app_check: ^0.2.1+17
+  permission_handler: ^11.3.1
+  pedometer: ^4.1.1
+  alarm: ^5.1.2
+  path_provider: ^2.1.5
+  path: ^1.9.0
+  encrypt: ^5.0.3
+  crypto: ^3.0.6
+  syncfusion_flutter_charts: ^28.1.41
+  syncfusion_flutter_pdf: ^28.1.41
+
+
+dependency_overrides:
+  win32: ^5.5.4
 
 
 dev_dependencies:
@@ -48,6 +63,7 @@ dev_dependencies:
 flutter:
   uses-material-design: true
   assets:
+    - assets/
     - assets/auth/
     - assets/home/
 

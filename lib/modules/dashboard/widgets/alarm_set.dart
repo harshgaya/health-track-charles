@@ -1,15 +1,17 @@
+import 'package:alarm/alarm.dart';
+import 'package:alarm/model/alarm_settings.dart';
+import 'package:alarm/model/notification_settings.dart';
+import 'package:alarm/model/volume_settings.dart';
 import 'package:fitness_health_tracker/controller/main_controller.dart';
 import 'package:fitness_health_tracker/helpers/utils.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
+import 'package:permission_handler/permission_handler.dart';
 
 import '../../../helpers/colors.dart';
-import '../../../main.dart';
-import '../../../models/alarm_helper.dart';
-import '../../../models/alarm_info.dart';
-import 'package:timezone/timezone.dart' as tz;
+import 'dart:io';
 
 class AlarmSet extends StatefulWidget {
   const AlarmSet({super.key});
@@ -24,9 +26,6 @@ class _AlarmSetState extends State<AlarmSet> {
   String _alarmTimeString = '';
   String bedTimeString = '';
   final mainController = Get.put(MainController());
-  AlarmHelper _alarmHelper = AlarmHelper();
-  Future<List<AlarmInfo>>? _alarms;
-  List<AlarmInfo>? _currentAlarms;
 
   @override
   void initState() {
@@ -36,94 +35,48 @@ class _AlarmSetState extends State<AlarmSet> {
       _alarmTimeString = value['alarmTime']!;
       setState(() {});
     });
-    loadAlarms();
 
     super.initState();
   }
 
-  void loadAlarms() {
-    _alarms = _alarmHelper.getAlarms();
-    if (mounted) setState(() {});
-  }
-
-  void scheduleAlarm(
-      DateTime scheduledNotificationDateTime, AlarmInfo alarmInfo,
-      {required bool isRepeating}) async {
-    try {
-      var androidPlatformChannelSpecifics = AndroidNotificationDetails(
-        'alarm_notif',
-        'alarm_notif',
-        channelDescription: 'Channel for Alarm notification',
-        icon: 'timer_icon',
-        sound: RawResourceAndroidNotificationSound('a_long_cold_sting'),
-        largeIcon: DrawableResourceAndroidBitmap('timer_icon'),
-      );
-
-      var iOSPlatformChannelSpecifics = IOSNotificationDetails(
-        sound: 'a_long_cold_sting.wav',
-        presentAlert: true,
-        presentBadge: true,
-        presentSound: true,
-      );
-      var platformChannelSpecifics = NotificationDetails(
-        android: androidPlatformChannelSpecifics,
-        iOS: iOSPlatformChannelSpecifics,
-      );
-
-      if (isRepeating)
-        await flutterLocalNotificationsPlugin.showDailyAtTime(
-          0,
-          'Office',
-          alarmInfo.title,
-          Time(
-            scheduledNotificationDateTime.hour,
-            scheduledNotificationDateTime.minute,
-            scheduledNotificationDateTime.second,
-          ),
-          platformChannelSpecifics,
-        );
-      else
-        await flutterLocalNotificationsPlugin.zonedSchedule(
-          0,
-          'Office',
-          alarmInfo.title,
-          tz.TZDateTime.from(scheduledNotificationDateTime, tz.local),
-          platformChannelSpecifics,
-          androidAllowWhileIdle: true,
-          uiLocalNotificationDateInterpretation:
-              UILocalNotificationDateInterpretation.absoluteTime,
-        );
-      print('alarm set');
-    } catch (e) {
-      print('error setting alarm $e');
+  void setAlarm() async {
+    final status = await Permission.notification.status;
+    if (status.isDenied) {
+      final res = await Permission.notification.request();
     }
-  }
-
-  void onSaveAlarm(bool _isRepeating) {
-    DateTime? scheduleAlarmDateTime;
-    if (_alarmTime!.isAfter(DateTime.now()))
-      scheduleAlarmDateTime = _alarmTime;
-    else
-      scheduleAlarmDateTime = _alarmTime!.add(const Duration(days: 1));
-
-    var alarmInfo = AlarmInfo(
-      alarmDateTime: scheduleAlarmDateTime,
-      gradientColorIndex: 0,
-      title: 'alarm',
+    DateTime now = DateTime.now();
+    DateTime alarmTime = _alarmTime!;
+    if (alarmTime.isBefore(now)) {
+      alarmTime = alarmTime.add(const Duration(days: 1));
+    }
+    final alarmSettings = AlarmSettings(
+      id: 42,
+      dateTime: _alarmTime!,
+      assetAudioPath: 'assets/marimba.mp3',
+      loopAudio: true,
+      vibrate: true,
+      warningNotificationOnKill: Platform.isIOS,
+      androidFullScreenIntent: true,
+      volumeSettings: VolumeSettings.fade(
+        volume: 0.8,
+        fadeDuration: Duration(seconds: 5),
+        volumeEnforced: true,
+      ),
+      notificationSettings: const NotificationSettings(
+        title: 'Wake Up',
+        body: 'Make your health',
+        stopButton: 'Stop the alarm',
+        icon: 'notification_icon',
+        iconColor: Color(0xff862778),
+      ),
     );
-    _alarmHelper.insertAlarm(alarmInfo);
-    if (scheduleAlarmDateTime != null) {
-      scheduleAlarm(scheduleAlarmDateTime, alarmInfo,
-          isRepeating: _isRepeating);
-    }
-    Navigator.pop(context);
-    loadAlarms();
+    await Alarm.set(alarmSettings: alarmSettings);
   }
 
-  void deleteAlarm(int? id) {
-    _alarmHelper.delete(id);
-    //unsubscribe for notification
-    loadAlarms();
+  void deleteAlarm() {
+    Alarm.stop(42).then((res) {
+      if (res && mounted) Navigator.pop(context, true);
+    });
   }
 
   @override
@@ -132,7 +85,9 @@ class _AlarmSetState extends State<AlarmSet> {
       padding: const EdgeInsets.all(10),
       decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(20),
-          color: const Color(AppColors.buttonBorderColorLightMode)),
+          color: Theme.of(context).brightness == Brightness.dark
+              ? Color(0xFFEEEEEE)
+              : Colors.black),
       child: Column(
         children: [
           Row(
@@ -147,11 +102,13 @@ class _AlarmSetState extends State<AlarmSet> {
                   const SizedBox(
                     width: 10,
                   ),
-                  const Text(
+                  Text(
                     'Bed time',
                     style: TextStyle(
                       fontSize: 12,
-                      color: Colors.white,
+                      color: Theme.of(context).brightness == Brightness.dark
+                          ? Colors.black
+                          : Colors.white,
                     ),
                   )
                 ],
@@ -165,13 +122,15 @@ class _AlarmSetState extends State<AlarmSet> {
                   const SizedBox(
                     width: 10,
                   ),
-                  const Text(
+                  Text(
                     'Wake up',
                     style: TextStyle(
                       fontSize: 12,
-                      color: Colors.white,
+                      color: Theme.of(context).brightness == Brightness.dark
+                          ? Colors.black
+                          : Colors.white,
                     ),
-                  )
+                  ),
                 ],
               ),
             ],
@@ -183,19 +142,23 @@ class _AlarmSetState extends State<AlarmSet> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                bedTimeString,
-                style: const TextStyle(
+                Utils.convertToAmPm(bedTimeString),
+                style: TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.w600,
-                  color: Colors.white,
+                  color: Theme.of(context).brightness == Brightness.dark
+                      ? Colors.black
+                      : Colors.white,
                 ),
               ),
               Text(
-                _alarmTimeString,
-                style: const TextStyle(
+                Utils.convertToAmPm(_alarmTimeString),
+                style: TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.w600,
-                  color: Colors.white,
+                  color: Theme.of(context).brightness == Brightness.dark
+                      ? Colors.black
+                      : Colors.white,
                 ),
               ),
             ],
@@ -203,21 +166,25 @@ class _AlarmSetState extends State<AlarmSet> {
           const SizedBox(
             height: 5,
           ),
-          const Row(
+          Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
                 'Tonight',
                 style: TextStyle(
                   fontSize: 12,
-                  color: Colors.white,
+                  color: Theme.of(context).brightness == Brightness.dark
+                      ? Colors.black
+                      : Colors.white,
                 ),
               ),
               Text(
                 'Tomorrow',
                 style: TextStyle(
                   fontSize: 12,
-                  color: Colors.white,
+                  color: Theme.of(context).brightness == Brightness.dark
+                      ? Colors.black
+                      : Colors.white,
                 ),
               ),
             ],
@@ -230,7 +197,9 @@ class _AlarmSetState extends State<AlarmSet> {
               Expanded(
                 child: Container(
                   height: 1,
-                  color: const Color(AppColors.lineColor),
+                  color: Theme.of(context).brightness == Brightness.dark
+                      ? Colors.black
+                      : const Color(AppColors.lineColor),
                 ),
               ),
             ],
@@ -331,13 +300,27 @@ class _AlarmSetState extends State<AlarmSet> {
                                   FloatingActionButton.extended(
                                     onPressed: () {
                                       setState(() {});
+
                                       mainController.saveBedTime(
                                           bedTime: bedTimeString,
                                           alarmTime: _alarmTimeString);
-                                      onSaveAlarm(false);
+                                      setAlarm();
+                                      Navigator.of(context).pop();
                                     },
                                     icon: const Icon(Icons.alarm),
                                     label: const Text('Save'),
+                                  ),
+                                  const Spacer(),
+                                  TextButton(
+                                      onPressed: deleteAlarm,
+                                      child: Text(
+                                        'Delete Alarm',
+                                        style: TextStyle(
+                                          color: Colors.red,
+                                        ),
+                                      )),
+                                  const SizedBox(
+                                    height: 20,
                                   ),
                                 ],
                               ),
@@ -346,10 +329,12 @@ class _AlarmSetState extends State<AlarmSet> {
                         );
                       });
                 },
-                child: const Text(
+                child: Text(
                   'Edit',
                   style: TextStyle(
-                    color: Color(AppColors.skyColor),
+                    color: Theme.of(context).brightness == Brightness.dark
+                        ? Color(AppColors.appButtonColorDarkMode)
+                        : Color(AppColors.skyColor),
                     fontSize: 16,
                   ),
                 )),

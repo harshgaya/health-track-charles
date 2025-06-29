@@ -2,6 +2,10 @@ import 'package:fitness_health_tracker/modules/exercise/pages/exercise_detail.da
 import 'package:fitness_health_tracker/modules/exercise/widgets/exercise-category-tile.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:google_fonts/google_fonts.dart';
+
+import '../../auth/pages/settings.dart';
+import '../../dashboard/pages/home_page.dart';
 
 class ExerciseCategory extends StatefulWidget {
   const ExerciseCategory({super.key});
@@ -156,41 +160,159 @@ class _ExerciseCategoryState extends State<ExerciseCategory> {
   Widget build(BuildContext context) {
     return SafeArea(
       child: Scaffold(
-        body: Padding(
-          padding: const EdgeInsets.all(8.0),
+        bottomSheet: Container(
+          decoration: BoxDecoration(
+            color: Theme.of(context).brightness == Brightness.dark
+                ? Colors.black
+                : Color(0xFFE8F4F8),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.2),
+                blurRadius: 10,
+                spreadRadius: 2,
+                offset: Offset(0, -3), // shadow above the container
+              ),
+            ],
+          ),
           child: Column(
+            mainAxisSize: MainAxisSize.min,
             children: [
-              Text(
-                'Choose the category',
-                style: TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.w600,
-                  color: Theme.of(context).brightness == Brightness.dark
-                      ? Colors.white
-                      : Colors.black,
-                ),
-              ),
-              const SizedBox(
-                height: 20,
-              ),
-              Expanded(
-                child: ListView.builder(
-                    itemCount: exercises.length,
-                    itemBuilder: (context, index) {
-                      final item = exercises[index];
-                      return ExerciseCategoryTile(
-                        image: item['image'],
-                        title: item['category'],
-                        subtitle: item['subtitle'],
-                        function: () {
-                          Get.to(() => ExerciseDetails(data: item['items']));
+              LayoutBuilder(
+                builder: (context, constraints) {
+                  double screenWidth = MediaQuery.of(context).size.width;
+                  double iconSize = screenWidth * 0.08;
+                  double fontSize = screenWidth * 0.03;
+                  return Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceAround,
+                    children: [
+                      InkWell(
+                        onTap: () {
+                          Get.to(() => HomePage());
                         },
-                      );
-                    }),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Image.asset(
+                              'assets/home/home.png',
+                              height: iconSize,
+                              color: Theme.of(context).brightness ==
+                                      Brightness.dark
+                                  ? Colors.white
+                                  : Colors.black,
+                            ),
+                            const SizedBox(
+                              height: 3,
+                            ),
+                            Text(
+                              'Home',
+                              style: GoogleFonts.poppins(
+                                fontSize: fontSize,
+                                fontWeight: FontWeight.bold,
+                                fontStyle: FontStyle.normal,
+                                color: Theme.of(context).brightness ==
+                                        Brightness.dark
+                                    ? Colors.white
+                                    : Colors.black,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      InkWell(
+                        onTap: () {
+                          Get.to(() => SettingsPage());
+                        },
+                        child: Column(
+                          children: [
+                            Image.asset(
+                              'assets/home/profile.png',
+                              height: iconSize,
+                              color: Theme.of(context).brightness ==
+                                      Brightness.dark
+                                  ? Colors.white
+                                  : Colors.black,
+                            ),
+                            const SizedBox(
+                              height: 3,
+                            ),
+                            Text(
+                              'Profile',
+                              style: GoogleFonts.poppins(
+                                fontSize: fontSize,
+                                fontWeight: FontWeight.bold,
+                                fontStyle: FontStyle.normal,
+                                color: Theme.of(context).brightness ==
+                                        Brightness.dark
+                                    ? Colors.white
+                                    : Colors.black,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  );
+                },
               ),
             ],
           ),
         ),
+        body: LayoutBuilder(builder: (context, constraints) {
+          double screenWidth = constraints.maxWidth;
+          double padding = screenWidth * 0.05;
+          double buttonHeight = screenWidth * 0.12;
+          double fontSize = screenWidth * 0.04;
+
+          return Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Column(
+              children: [
+                const SizedBox(
+                  height: 20,
+                ),
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: InkWell(
+                      onTap: () => Get.back(), child: Icon(Icons.arrow_back)),
+                ),
+                const SizedBox(
+                  height: 10,
+                ),
+                Text(
+                  'Choose the category',
+                  style: TextStyle(
+                    fontSize: fontSize,
+                    fontWeight: FontWeight.w600,
+                    color: Theme.of(context).brightness == Brightness.dark
+                        ? Colors.white
+                        : Colors.black,
+                  ),
+                ),
+                const SizedBox(
+                  height: 20,
+                ),
+                Expanded(
+                  child: ListView.builder(
+                      itemCount: exercises.length,
+                      itemBuilder: (context, index) {
+                        final item = exercises[index];
+                        return ExerciseCategoryTile(
+                          image: item['image'],
+                          title: item['category'],
+                          subtitle: item['subtitle'],
+                          function: () {
+                            Get.to(() => ExerciseDetails(
+                                  data: item['items'],
+                                  title: item['category'],
+                                ));
+                          },
+                        );
+                      }),
+                ),
+              ],
+            ),
+          );
+        }),
       ),
     );
   }

@@ -25,6 +25,10 @@ class _ImageUploadWidgetState extends State<ImageUploadWidget> {
   final TextEditingController _calorieController = TextEditingController();
   bool _isUploading = false;
   bool _isEstimating = false;
+  var fat = 0.0;
+  var carb = 0.0;
+  var protein = 0.0;
+  var sugar = 0.0;
 
   Future<void> _pickImage() async {
     final ImagePicker picker = ImagePicker();
@@ -48,38 +52,36 @@ class _ImageUploadWidgetState extends State<ImageUploadWidget> {
     });
 
     try {
-      final response = await http.post(
-        Uri.parse("https://api.openai.com/v1/chat/completions"),
+      final query = "${_quantityController.text} ${_itemController.text}";
+      final url =
+          Uri.parse("https://api.calorieninjas.com/v1/nutrition?query=$query");
+
+      final response = await http.get(
+        url,
         headers: {
-          "Authorization": "Bearer ${StringsConst.gptApi}",
-          "Content-Type": "application/json",
+          "X-Api-Key":
+              StringsConst.gptApi, // Replace with your CalorieNinjas API key
         },
-        body: jsonEncode({
-          "model": "gpt-3.5-turbo",
-          "messages": [
-            {
-              "role": "system",
-              "content":
-                  "You are a nutrition assistant. Estimate the calories based on the given food item and quantity."
-            },
-            {
-              "role": "user",
-              "content":
-                  "Estimate calories for ${_quantityController.text} grams of ${_itemController.text}."
-            }
-          ],
-        }),
       );
-      print('response ${response.body}');
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
-        String estimatedCalories = data['choices'][0]['message']['content'];
-        _calorieController.text = estimatedCalories;
+        if (data['items'] != null && data['items'].isNotEmpty) {
+          print('data ${data}');
+          final calories = data['items'][0]['calories'].toString();
+          _calorieController.text = calories;
+          fat = (data['items'][0]['fat_total_g'] ?? 0).toDouble();
+          carb = (data['items'][0]['carbohydrates_total_g'] ?? 0).toDouble();
+          protein = (data['items'][0]['protein_g'] ?? 0).toDouble();
+          sugar = (data['items'][0]['sugar_g'] ?? 0).toDouble();
+        } else {
+          _calorieController.text = "No data found";
+        }
       } else {
-        _calorieController.text = "Error estimating calories";
+        _calorieController.text = "Error: ${response.statusCode}";
       }
     } catch (e) {
+      print('error $e');
       _calorieController.text = "Failed to fetch calories";
     }
 
@@ -91,7 +93,7 @@ class _ImageUploadWidgetState extends State<ImageUploadWidget> {
   Future<void> _uploadImage() async {
     if (_selectedImage == null ||
         _itemController.text.isEmpty ||
-        _quantityController.text.isEmpty ||
+        // _quantityController.text.isEmpty ||
         _calorieController.text.isEmpty) {
       if (int.tryParse(_calorieController.text) == null) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -134,10 +136,10 @@ class _ImageUploadWidgetState extends State<ImageUploadWidget> {
             'item': _itemController.text,
             'quantity': _quantityController.text,
             'calorie': _calorieController.text,
-            'fats': "",
-            'carbs': "",
-            'proteins': 0,
-            'sugars': 0,
+            'fats': fat,
+            'carbs': carb,
+            'proteins': protein,
+            'sugars': sugar,
             'imageUrl': imageUrl,
           }
         ])
@@ -168,7 +170,17 @@ class _ImageUploadWidgetState extends State<ImageUploadWidget> {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: const Text("Upload Plate"),
+      backgroundColor: Theme.of(context).brightness == Brightness.dark
+          ? Color(0xFF424242)
+          : Colors.white,
+      title: Text(
+        "Upload Plate",
+        style: TextStyle(
+          color: Theme.of(context).brightness == Brightness.dark
+              ? Colors.white
+              : Colors.black,
+        ),
+      ),
       content: SingleChildScrollView(
         child: ConstrainedBox(
           constraints: BoxConstraints(
@@ -197,6 +209,11 @@ class _ImageUploadWidgetState extends State<ImageUploadWidget> {
               const SizedBox(height: 10),
               TextFormField(
                 controller: _itemController,
+                style: TextStyle(
+                  color: Theme.of(context).brightness == Brightness.dark
+                      ? Colors.white
+                      : Colors.black,
+                ),
                 decoration: const InputDecoration(
                   labelText: "Item Name",
                   border: OutlineInputBorder(),
@@ -205,6 +222,11 @@ class _ImageUploadWidgetState extends State<ImageUploadWidget> {
               ),
               const SizedBox(height: 10),
               TextFormField(
+                style: TextStyle(
+                  color: Theme.of(context).brightness == Brightness.dark
+                      ? Colors.white
+                      : Colors.black,
+                ),
                 controller: _quantityController,
                 keyboardType: TextInputType.number,
                 decoration: const InputDecoration(
@@ -215,6 +237,11 @@ class _ImageUploadWidgetState extends State<ImageUploadWidget> {
               ),
               const SizedBox(height: 10),
               TextFormField(
+                style: TextStyle(
+                  color: Theme.of(context).brightness == Brightness.dark
+                      ? Colors.white
+                      : Colors.black,
+                ),
                 controller: _calorieController,
                 keyboardType: TextInputType.number,
                 readOnly: _isEstimating,

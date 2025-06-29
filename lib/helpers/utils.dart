@@ -18,4 +18,18 @@ class Utils {
     DateTime now = DateTime.now();
     return TimeOfDay(hour: hours, minute: minutes);
   }
+
+  static String convertToAmPm(String bedTimeString) {
+    try {
+      final date = DateFormat("HH:mm").parse(bedTimeString);
+      return DateFormat("h:mm a").format(date);
+    } catch (e) {
+      return bedTimeString;
+    }
+  }
+
+  static bool isTablet(BuildContext context) {
+    final shortestSide = MediaQuery.of(context).size.shortestSide;
+    return shortestSide >= 600;
+  }
 }

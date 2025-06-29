@@ -16,6 +16,8 @@ class MainController extends GetxController {
   RxString goal = ''.obs;
   RxString exerciseDays = ''.obs;
   RxBool addingWater = false.obs;
+  RxInt userWeight = 0.obs;
+  RxBool valueChanged = false.obs;
 
   Future<void> signUpWithEmail(
       {required String email,
@@ -276,6 +278,7 @@ class MainController extends GetxController {
   Future<void> addWaterTea(
       {required bool water,
       required int value,
+      required String item,
       required BuildContext context,
       required String time}) async {
     try {
@@ -288,17 +291,46 @@ class MainController extends GetxController {
           .collection('water')
           .doc(time);
 
-      if (water) {
-        await userFoodDoc.set({'time': time, 'water': FieldValue.increment(1)},
-            SetOptions(merge: true));
-      } else {
-        await userFoodDoc.set({'time': time, 'tea': FieldValue.increment(1)},
-            SetOptions(merge: true));
-      }
+      await userFoodDoc.set(
+          {'time': time, item.toLowerCase(): FieldValue.increment(1)},
+          SetOptions(merge: true));
 
+      // if (water) {
+      //   await userFoodDoc.set({'time': time, 'water': FieldValue.increment(1)},
+      //       SetOptions(merge: true));
+      // } else {
+      //   await userFoodDoc.set({'time': time, 'tea': FieldValue.increment(1)},
+      //       SetOptions(merge: true));
+      // }
+
+      // ScaffoldMessenger.of(context).showSnackBar(
+      //   SnackBar(content: Text("Upload Successful!")),
+      // );
+    } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Upload Successful!")),
+        SnackBar(content: Text("Upload Failed!")),
       );
+    } finally {
+      addingWater.value = false;
+    }
+  }
+
+  Future<void> removeWaterTea(
+      {required String item,
+      required BuildContext context,
+      required String time}) async {
+    try {
+      addingWater.value = true;
+      String userId = FirebaseAuth.instance.currentUser!.uid;
+
+      DocumentReference userFoodDoc = FirebaseFirestore.instance
+          .collection('users')
+          .doc(userId)
+          .collection('water')
+          .doc(time);
+
+      await userFoodDoc.set({item.toLowerCase(): FieldValue.increment(-1)},
+          SetOptions(merge: true));
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text("Upload Failed!")),
@@ -351,5 +383,118 @@ class MainController extends GetxController {
     double totalHours = sleepDuration.inMinutes / 60.0;
 
     return double.parse(totalHours.toStringAsFixed(1));
+  }
+
+  Future<void> saveStepStandCount(
+      {required int steps, required int stand}) async {
+    String userId = FirebaseAuth.instance.currentUser!.uid;
+    String todayTimestamp = DateFormat('dd-MM-yyyy').format(DateTime.now());
+
+    DocumentReference userFoodDoc = FirebaseFirestore.instance
+        .collection('users')
+        .doc(userId)
+        .collection('steps')
+        .doc(todayTimestamp);
+
+    await userFoodDoc.set(
+        {'time': todayTimestamp, 'steps': steps, 'stand': stand},
+        SetOptions(merge: true));
+  }
+
+  void getUserWeight() {
+    final userId = FirebaseAuth.instance.currentUser!.uid;
+    FirebaseFirestore.instance
+        .collection('users')
+        .doc(userId)
+        .get()
+        .then((value) {
+      userWeight.value = int.tryParse(value.get('weight')) ??
+          double.tryParse(value.get('weight'))?.toInt() ??
+          0;
+    });
+  }
+
+  Future<void> saveExerciseMinute({
+    required dynamic minutes,
+  }) async {
+    String userId = FirebaseAuth.instance.currentUser!.uid;
+    String todayTimestamp = DateFormat('dd-MM-yyyy').format(DateTime.now());
+
+    DocumentReference userFoodDoc = FirebaseFirestore.instance
+        .collection('users')
+        .doc(userId)
+        .collection('steps')
+        .doc(todayTimestamp);
+
+    final docSnapshot = await userFoodDoc.get();
+    dynamic previousMinutes = 0;
+
+    if (docSnapshot.exists) {
+      final data = docSnapshot.data() as Map<String, dynamic>;
+      if (data.containsKey('exercise')) {
+        previousMinutes = data['exercise'] ?? 0;
+      }
+    }
+
+    int totalMinutes = previousMinutes + minutes;
+
+    await userFoodDoc.set({
+      'time': todayTimestamp,
+      'exercise': totalMinutes,
+    }, SetOptions(merge: true));
+  }
+
+  Future<void> addNewItem({
+    required String name,
+    required BuildContext context,
+    required String time,
+  }) async {
+    try {
+      addingWater.value = true;
+      String userId = FirebaseAuth.instance.currentUser!.uid;
+
+      DocumentReference userFoodDoc =
+          FirebaseFirestore.instance.collection('users').doc(userId);
+
+      DocumentSnapshot docSnapshot = await userFoodDoc.get();
+      List<dynamic> existingItems = [];
+
+      if (docSnapshot.exists && docSnapshot.data() != null) {
+        Map<String, dynamic> data = docSnapshot.data() as Map<String, dynamic>;
+        if (data['items'] != null && data['items'] is List) {
+          existingItems = List.from(data['items']);
+        }
+      }
+
+      // Check for name clash (case-insensitive comparison)
+      bool nameExists = existingItems.any((item) =>
+          item['name'].toString().toLowerCase() == name.toLowerCase());
+
+      if (nameExists) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+              content: Text("Item with the same name already exists!")),
+        );
+        return;
+      }
+
+      // Add new item
+      Map<String, dynamic> newItem = {
+        'name': name,
+        'image1': '',
+        'image2': '',
+        'time': Timestamp.now(),
+      };
+
+      existingItems.add(newItem);
+
+      await userFoodDoc.update({'items': existingItems});
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Upload Failed!")),
+      );
+    } finally {
+      addingWater.value = false;
+    }
   }
 }

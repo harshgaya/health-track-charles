@@ -7,19 +7,24 @@ class RoundedButton extends StatelessWidget {
   final String text;
   final int? backgroundColor;
   final int? textColor;
-  const RoundedButton(
-      {super.key,
-      required this.function,
-      required this.text,
-      this.backgroundColor,
-      this.textColor});
+
+  const RoundedButton({
+    super.key,
+    required this.function,
+    required this.text,
+    this.backgroundColor,
+    this.textColor,
+  });
 
   @override
   Widget build(BuildContext context) {
+    final double screenWidth = MediaQuery.of(context).size.width;
+    final double buttonPadding = screenWidth * 0.04;
+    final double fontSize = screenWidth * 0.045; // Adaptive font size
+    final double borderRadius = screenWidth * 0.08; // Adaptive border radius
+
     return OutlinedButton(
-      onPressed: () {
-        function();
-      },
+      onPressed: function,
       style: OutlinedButton.styleFrom(
         backgroundColor: backgroundColor != null
             ? Color(backgroundColor!)
@@ -27,7 +32,7 @@ class RoundedButton extends StatelessWidget {
                 ? const Color(AppColors.appButtonColorDarkMode)
                 : const Color(AppColors.appButtonColorLightMode),
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(30),
+          borderRadius: BorderRadius.circular(borderRadius),
         ),
         side: BorderSide(
           color: Theme.of(context).brightness == Brightness.dark
@@ -37,11 +42,12 @@ class RoundedButton extends StatelessWidget {
         ),
       ),
       child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 15),
+        padding: EdgeInsets.symmetric(vertical: buttonPadding),
         child: Text(
           text,
           style: TextStyle(
             fontWeight: FontWeight.w600,
+            fontSize: fontSize,
             color: textColor != null
                 ? Color(textColor!)
                 : Theme.of(context).brightness == Brightness.dark

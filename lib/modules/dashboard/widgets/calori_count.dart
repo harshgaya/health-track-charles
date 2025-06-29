@@ -4,41 +4,44 @@ class CaloriCount extends StatelessWidget {
   final String image;
   final String title;
   final String total;
-  const CaloriCount(
-      {super.key,
-      required this.image,
-      required this.total,
-      required this.title});
+
+  const CaloriCount({
+    super.key,
+    required this.image,
+    required this.total,
+    required this.title,
+  });
 
   @override
   Widget build(BuildContext context) {
+    double screenWidth = MediaQuery.of(context).size.width;
+    double fontSize = screenWidth * 0.03; // Scales based on screen width
+    double iconSize = screenWidth * 0.08;
+    double spacing = screenWidth * 0.02;
+
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
         Image.asset(
           image,
-          height: 32,
+          height: iconSize,
         ),
-        const SizedBox(
-          height: 10,
-        ),
+        SizedBox(height: spacing),
         Text(
           title,
           style: TextStyle(
-            fontSize: 12,
+            fontSize: fontSize,
             fontWeight: FontWeight.w600,
             color: Theme.of(context).brightness == Brightness.dark
                 ? Colors.white
                 : Colors.black,
           ),
         ),
-        const SizedBox(
-          height: 5,
-        ),
+        SizedBox(height: spacing / 2),
         Text(
           '$total/800 cal',
           style: TextStyle(
-            fontSize: 12,
+            fontSize: fontSize,
             fontWeight: FontWeight.w600,
             color: Theme.of(context).brightness == Brightness.dark
                 ? Colors.white

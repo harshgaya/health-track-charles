@@ -4,7 +4,7 @@ import 'package:intl/intl.dart';
 import '../../../helpers/colors.dart';
 
 class TwoBackButton extends StatefulWidget {
-  final Function(String) onDateChanged; // Callback with formatted date
+  final Function(String) onDateChanged;
 
   const TwoBackButton({super.key, required this.onDateChanged});
 
@@ -28,41 +28,46 @@ class _TwoBackButtonState extends State<TwoBackButton> {
     bool isToday = DateFormat('dd-MM-yyyy').format(selectedDate) ==
         DateFormat('dd-MM-yyyy').format(DateTime.now());
 
+    double screenWidth = MediaQuery.of(context).size.width;
+    double screenHeight = MediaQuery.of(context).size.height;
+
+    double containerWidth = (screenWidth * 0.41).clamp(140, 220);
+    double containerHeight = (screenHeight * 0.02).clamp(50, 70);
+    double fontSize = (screenWidth * 0.04).clamp(12, 18);
+    double iconSize = (screenWidth * 0.05).clamp(18, 26);
+
     return Container(
-      width: 145,
-      height: 34,
+      width: containerWidth,
+      height: containerHeight,
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(containerHeight * 0.45),
         color: Theme.of(context).brightness == Brightness.dark
             ? const Color(AppColors.appButtonColorDarkMode)
             : const Color(AppColors.skyColor),
       ),
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceAround,
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          GestureDetector(
-            onTap: () => _changeDate(-1), // Go back one day
-            child: const Icon(Icons.arrow_back),
+          IconButton(
+            onPressed: () => _changeDate(-1),
+            icon: Icon(Icons.arrow_back, size: iconSize),
           ),
-          const SizedBox(width: 5),
           Text(
-            isToday
-                ? "Today"
-                : DateFormat('dd MMM')
-                    .format(selectedDate), // Show "Today" if it's today
+            isToday ? "Today" : DateFormat('dd MMM').format(selectedDate),
             style: TextStyle(
               fontWeight: FontWeight.bold,
+              fontSize: fontSize,
               color: Theme.of(context).brightness == Brightness.dark
                   ? Colors.white
                   : Colors.black,
             ),
           ),
-          const SizedBox(width: 5),
-          GestureDetector(
-            onTap: isToday ? null : () => _changeDate(1), // Disable if today
-            child: Icon(
+          IconButton(
+            onPressed: isToday ? null : () => _changeDate(1),
+            icon: Icon(
               Icons.arrow_forward,
-              color: isToday ? Colors.grey : null, // Grey if disabled
+              size: iconSize,
+              color: isToday ? Colors.grey : null,
             ),
           ),
         ],

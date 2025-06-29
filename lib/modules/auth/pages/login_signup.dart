@@ -17,88 +17,94 @@ class LoginSignup extends StatefulWidget {
 
 class _LoginSignupState extends State<LoginSignup> {
   final mainController = Get.put(MainController());
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: SizedBox(
-        width: Get.width,
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 20),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Image.asset(
-                'assets/auth/heart.png',
-                height: 109,
-                width: 125,
-              ),
-              Text(
-                'Vitality',
-                style: GoogleFonts.mulish(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 44,
-                  color: const Color(AppColors.pinkColor),
-                ),
-              ),
-              const SizedBox(
-                height: 40,
-              ),
-              const Text(
-                TextConstants.signupLogin,
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontSize: 14,
-                  color: Color(AppColors.grayColor),
-                ),
-              ),
-              const SizedBox(
-                height: 30,
-              ),
-              Row(
-                children: [
-                  Expanded(
-                    child: RoundedButton(
-                      function: () {
-                        Get.to(() => const Login());
-                      },
-                      textColor: 0xFFFFFFFF,
-                      text: 'Login',
+      body: LayoutBuilder(
+        builder: (context, constraints) {
+          double padding = constraints.maxWidth * 0.05;
+          double imageSize = constraints.maxWidth * 0.3;
+          double fontSize = constraints.maxWidth * 0.08;
+          double textFontSize = constraints.maxWidth * 0.039;
+
+          return Center(
+            child: SingleChildScrollView(
+              child: Padding(
+                padding: EdgeInsets.symmetric(horizontal: padding),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Image.asset(
+                      'assets/auth/heart.png',
+                      height: imageSize,
+                      width: imageSize,
                     ),
-                  ),
-                  const SizedBox(
-                    width: 20,
-                  ),
-                  Expanded(
-                    child: RoundedButton(
-                      function: () {
-                        Get.to(() => const SignUp());
-                      },
-                      textColor: AppColors.appDarkBackgroundColor,
-                      backgroundColor: AppColors.buttonBorderColorDarkMode,
-                      text: 'Sign Up',
+                    Text(
+                      'Vitality',
+                      style: GoogleFonts.mulish(
+                        fontWeight: FontWeight.bold,
+                        fontSize: fontSize,
+                        color: const Color(AppColors.pinkColor),
+                      ),
                     ),
-                  ),
-                ],
-              ),
-              const SizedBox(
-                height: 40,
-              ),
-              InkWell(
-                onTap: () {
-                  mainController.signInAnonymously(context: context);
-                },
-                child: Text(
-                  'Continue as guest',
-                  style: TextStyle(
-                      color: Theme.of(context).brightness == Brightness.dark
-                          ? const Color(AppColors.appButtonColorDarkMode)
-                          : const Color(AppColors.appButtonColorLightMode)),
+                    SizedBox(height: constraints.maxHeight * 0.05),
+                    Text(
+                      TextConstants.signupLogin,
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontSize: textFontSize,
+                        color: const Color(AppColors.grayColor),
+                      ),
+                    ),
+                    SizedBox(height: constraints.maxHeight * 0.04),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: RoundedButton(
+                            function: () {
+                              Get.to(() => const Login());
+                            },
+                            textColor: 0xFFFFFFFF,
+                            text: 'Login',
+                          ),
+                        ),
+                        const SizedBox(width: 20),
+                        Expanded(
+                          child: RoundedButton(
+                            function: () {
+                              Get.to(() => const SignUp());
+                            },
+                            textColor: AppColors.appDarkBackgroundColor,
+                            backgroundColor:
+                                AppColors.buttonBorderColorDarkMode,
+                            text: 'Sign Up',
+                          ),
+                        ),
+                      ],
+                    ),
+                    SizedBox(height: constraints.maxHeight * 0.05),
+                    InkWell(
+                      onTap: () {
+                        mainController.signInAnonymously(context: context);
+                      },
+                      child: Text(
+                        'Continue as guest',
+                        style: TextStyle(
+                          fontSize: textFontSize,
+                          color: Theme.of(context).brightness == Brightness.dark
+                              ? const Color(AppColors.appButtonColorDarkMode)
+                              : const Color(AppColors.appButtonColorLightMode),
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
-              )
-            ],
-          ),
-        ),
+              ),
+            ),
+          );
+        },
       ),
     );
   }

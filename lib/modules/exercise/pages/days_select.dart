@@ -16,14 +16,17 @@ class _DaySelectState extends State<DaySelect> {
   final FixedExtentScrollController _controller =
       FixedExtentScrollController(initialItem: 2); // Default: 3 Days
 
-  int selectedDays = 3; // Default selection
+  int selectedDays = 3;
   final mainController = Get.put(MainController());
 
   @override
   Widget build(BuildContext context) {
+    final double screenWidth = MediaQuery.of(context).size.width;
+    final double screenHeight = MediaQuery.of(context).size.height;
+
     return Scaffold(
       body: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 20),
+        padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.05),
         child: Column(
           children: [
             Expanded(
@@ -33,22 +36,22 @@ class _DaySelectState extends State<DaySelect> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Text(
-                      'Select the days you will excercise',
+                      'Select the days you will exercise',
                       textAlign: TextAlign.center,
                       style: TextStyle(
-                        fontSize: 24,
+                        fontSize: screenWidth * 0.06, // Adaptive text size
                         fontWeight: FontWeight.bold,
                         color: Theme.of(context).brightness == Brightness.dark
                             ? Colors.white
                             : Colors.black,
                       ),
                     ),
-                    const SizedBox(height: 20),
+                    SizedBox(height: screenHeight * 0.03),
                     SizedBox(
-                      height: 400,
+                      height: screenHeight * 0.5, // Adaptive height
                       child: ListWheelScrollView.useDelegate(
                         controller: _controller,
-                        itemExtent: 70,
+                        itemExtent: screenHeight * 0.08,
                         physics: const FixedExtentScrollPhysics(),
                         onSelectedItemChanged: (index) {
                           setState(() {
@@ -62,7 +65,7 @@ class _DaySelectState extends State<DaySelect> {
                               child: Text(
                                 "$dayValue",
                                 style: GoogleFonts.mulish(
-                                  fontSize: 27,
+                                  fontSize: screenWidth * 0.07, // Adaptive size
                                   fontWeight: FontWeight.w600,
                                   color: dayValue == selectedDays
                                       ? Theme.of(context).brightness ==
@@ -78,26 +81,20 @@ class _DaySelectState extends State<DaySelect> {
                         ),
                       ),
                     ),
-                    const SizedBox(height: 40),
+                    SizedBox(height: screenHeight * 0.05),
                     SizedBox(
-                      width: Get.width - 40,
-                      child: Row(
-                        children: [
-                          Expanded(
-                            child: RoundedButton(
-                              function: () async {
-                                await mainController.updateUserData(
-                                    field: 'exercise_days',
-                                    value: selectedDays.toString());
-                                mainController.exerciseDays.value =
-                                    selectedDays.toString();
-                                Get.to(() => const CreatingPlan());
-                              },
-                              textColor: 0xFFFFFFFF,
-                              text: 'Next',
-                            ),
-                          ),
-                        ],
+                      width: screenWidth * 0.9, // Adaptive button width
+                      child: RoundedButton(
+                        function: () async {
+                          await mainController.updateUserData(
+                              field: 'exercise_days',
+                              value: selectedDays.toString());
+                          mainController.exerciseDays.value =
+                              selectedDays.toString();
+                          Get.to(() => const CreatingPlan());
+                        },
+                        textColor: 0xFFFFFFFF,
+                        text: 'Next',
                       ),
                     ),
                   ],

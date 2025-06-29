@@ -46,311 +46,377 @@ class _FoodSummarySingleState extends State<FoodSummarySingle> {
       child: Scaffold(
         body: SizedBox(
           width: Get.width,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              const SizedBox(
-                height: 20,
-              ),
-              TwoBackButton(
-                onDateChanged: (String date) {
-                  setState(() {
-                    todayDate = date;
-                  });
-                },
-              ),
-              StreamBuilder<DocumentSnapshot>(
-                  stream: FirebaseFirestore.instance
-                      .collection('users')
-                      .doc(userId)
-                      .collection('food')
-                      .doc(todayDate)
-                      .snapshots(),
-                  builder: (context, snapshot) {
-                    if (!snapshot.hasData || !snapshot.data!.exists) {
-                      return const Padding(
-                        padding: EdgeInsets.only(bottom: 50, top: 50, left: 30),
-                        child: Text("No data available"),
-                      );
-                    }
-
-                    var foodData =
-                        snapshot.data!.data() as Map<String, dynamic>;
-                    List<dynamic> foodList = foodData[widget.mealType] ?? [];
-
-                    if (foodList.isEmpty) {
-                      return const Padding(
-                        padding: EdgeInsets.only(bottom: 50),
-                        child: Text("No food added!"),
-                      );
-                    }
-                    var totalCalorie = foodList.fold(
-                        0,
-                        (sum, item) =>
-                            sum + (int.parse(item['calorie']) as int));
-                    return SizedBox(
-                      width: Get.width,
-                      child: Column(
-                        children: [
-                          const SizedBox(
-                            height: 20,
-                          ),
-                          Padding(
-                            padding: EdgeInsets.only(left: 30),
-                            child: Align(
-                                alignment: Alignment.centerLeft,
-                                child: Text(widget.mealType)),
-                          ),
-                          const SizedBox(
-                            height: 20,
-                          ),
-                          PieChart(
-                            dataMap: dataMap,
-                            animationDuration:
-                                const Duration(milliseconds: 800),
-                            chartLegendSpacing: 30,
-                            chartRadius:
-                                MediaQuery.of(context).size.width / 1.6,
-                            colorList: colorList,
-                            initialAngleInDegree: 0,
-                            chartType: ChartType.ring, // Makes it a ring chart
-                            ringStrokeWidth: 32,
-
-                            centerWidget: Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              crossAxisAlignment: CrossAxisAlignment.center,
-                              children: [
-                                Text(
-                                  'Total Calories',
-                                  style: TextStyle(
-                                    fontSize: 13,
-                                    color: Theme.of(context).brightness ==
-                                            Brightness.dark
-                                        ? Colors.white
-                                        : Color(0xFF848A9C),
-                                  ),
-                                ),
-                                Text(
-                                  '$totalCalorie/2000',
-                                  style: TextStyle(
-                                    fontSize: 16,
-                                    color: Theme.of(context).brightness ==
-                                            Brightness.dark
-                                        ? Colors.white
-                                        : const Color(AppColors
-                                            .buttonBorderColorLightMode),
-                                  ),
-                                ),
-                              ],
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 10),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                const SizedBox(
+                  height: 20,
+                ),
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: InkWell(
+                      onTap: () => Get.back(), child: Icon(Icons.arrow_back)),
+                ),
+                TwoBackButton(
+                  onDateChanged: (String date) {
+                    setState(() {
+                      todayDate = date;
+                    });
+                  },
+                ),
+                StreamBuilder<DocumentSnapshot>(
+                    stream: FirebaseFirestore.instance
+                        .collection('users')
+                        .doc(userId)
+                        .collection('food')
+                        .doc(todayDate)
+                        .snapshots(),
+                    builder: (context, snapshot) {
+                      if (!snapshot.hasData || !snapshot.data!.exists) {
+                        return Padding(
+                          padding:
+                              EdgeInsets.only(bottom: 50, top: 50, left: 30),
+                          child: Text(
+                            "No data available",
+                            style: TextStyle(
+                              color: Theme.of(context).brightness ==
+                                      Brightness.dark
+                                  ? Colors.white
+                                  : Colors.black,
                             ),
+                          ),
+                        );
+                      }
 
-                            legendOptions: LegendOptions(
-                              showLegendsInRow:
-                                  true, // Ensures legends are displayed in a row
-                              legendPosition: LegendPosition
-                                  .bottom, // Moves legends to the bottom
-                              showLegends: true,
-                              legendShape: BoxShape.circle,
-                              legendTextStyle: TextStyle(
-                                fontWeight: FontWeight.bold,
+                      var foodData =
+                          snapshot.data!.data() as Map<String, dynamic>;
+                      List<dynamic> foodList = foodData[widget.mealType] ?? [];
+
+                      if (foodList.isEmpty) {
+                        return Padding(
+                          padding: EdgeInsets.only(bottom: 50),
+                          child: Text("No food added!",
+                              style: TextStyle(
                                 color: Theme.of(context).brightness ==
                                         Brightness.dark
                                     ? Colors.white
                                     : Colors.black,
+                              )),
+                        );
+                      }
+                      var totalCalorie = foodList.fold<double>(
+                        0.0,
+                        (sum, item) =>
+                            sum +
+                            num.parse(item['calorie'].toString()).toDouble(),
+                      );
+                      final dataMap = {
+                        "Fats": foodList.fold<double>(
+                          0.0,
+                          (sum, item) =>
+                              sum +
+                              (double.tryParse(
+                                      item['fats']?.toString() ?? '0') ??
+                                  0.0),
+                        ),
+                        "Carbs": foodList.fold<double>(
+                          0.0,
+                          (sum, item) =>
+                              sum +
+                              (double.tryParse(
+                                      item['carbs']?.toString() ?? '0') ??
+                                  0.0),
+                        ),
+                        "Proteins": foodList.fold<double>(
+                          0.0,
+                          (sum, item) =>
+                              sum +
+                              (double.tryParse(
+                                      item['proteins']?.toString() ?? '0') ??
+                                  0.0),
+                        ),
+                        "Sugars": foodList.fold<double>(
+                          0.0,
+                          (sum, item) =>
+                              sum +
+                              (double.tryParse(
+                                      item['sugars']?.toString() ?? '0') ??
+                                  0.0),
+                        ),
+                      };
+                      return SizedBox(
+                        width: Get.width,
+                        child: Column(
+                          children: [
+                            const SizedBox(
+                              height: 20,
+                            ),
+                            Padding(
+                              padding: EdgeInsets.only(left: 30),
+                              child: Align(
+                                  alignment: Alignment.centerLeft,
+                                  child: Text(widget.mealType,
+                                      style: TextStyle(
+                                        color: Theme.of(context).brightness ==
+                                                Brightness.dark
+                                            ? Colors.white
+                                            : Colors.black,
+                                      ))),
+                            ),
+                            const SizedBox(
+                              height: 20,
+                            ),
+                            PieChart(
+                              dataMap: dataMap,
+                              animationDuration:
+                                  const Duration(milliseconds: 800),
+                              chartLegendSpacing: 30,
+                              chartRadius:
+                                  MediaQuery.of(context).size.width / 1.6,
+                              colorList: colorList,
+                              initialAngleInDegree: 0,
+                              chartType:
+                                  ChartType.ring, // Makes it a ring chart
+                              ringStrokeWidth: 32,
+
+                              centerWidget: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                crossAxisAlignment: CrossAxisAlignment.center,
+                                children: [
+                                  Text(
+                                    'Total Calories',
+                                    style: TextStyle(
+                                      fontSize: 13,
+                                      color: Theme.of(context).brightness ==
+                                              Brightness.dark
+                                          ? Colors.white
+                                          : Color(0xFF848A9C),
+                                    ),
+                                  ),
+                                  Text(
+                                    '${totalCalorie.toStringAsFixed(1)}/2000',
+                                    style: TextStyle(
+                                      fontSize: 16,
+                                      color: Theme.of(context).brightness ==
+                                              Brightness.dark
+                                          ? Colors.white
+                                          : const Color(AppColors
+                                              .buttonBorderColorLightMode),
+                                    ),
+                                  ),
+                                ],
+                              ),
+
+                              legendOptions: LegendOptions(
+                                showLegendsInRow:
+                                    true, // Ensures legends are displayed in a row
+                                legendPosition: LegendPosition
+                                    .bottom, // Moves legends to the bottom
+                                showLegends: true,
+                                legendShape: BoxShape.circle,
+                                legendTextStyle: TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  color: Theme.of(context).brightness ==
+                                          Brightness.dark
+                                      ? Colors.white
+                                      : Colors.black,
+                                ),
+                              ),
+                              chartValuesOptions: ChartValuesOptions(
+                                showChartValueBackground: true,
+                                showChartValues: true,
+                                showChartValuesInPercentage: true,
+                                showChartValuesOutside: false,
+                                decimalPlaces: 1,
                               ),
                             ),
-                            chartValuesOptions: ChartValuesOptions(
-                              showChartValueBackground: true,
-                              showChartValues: true,
-                              showChartValuesInPercentage: true,
-                              showChartValuesOutside: false,
-                              decimalPlaces: 1,
+                            const SizedBox(
+                              height: 20,
                             ),
-                          ),
-                          const SizedBox(
-                            height: 20,
-                          ),
-                          Padding(
-                            padding: const EdgeInsets.only(left: 8, right: 8),
-                            child: Table(
-                              columnWidths: const {
-                                0: FlexColumnWidth(2), // Food Item column
-                                1: FlexColumnWidth(1), // Quantity column
-                                2: FlexColumnWidth(1), // Calories column
-                              },
-                              children: [
-                                // Header Row
-                                TableRow(
-                                  //decoration: BoxDecoration(color: Colors.blue.shade200),
-                                  children: [
-                                    TableCell(
-                                      child: Padding(
-                                        padding: EdgeInsets.all(8.0),
-                                        child: Text("Food Item",
-                                            style: TextStyle(
-                                              fontWeight: FontWeight.bold,
-                                              color: Theme.of(context)
-                                                          .brightness ==
-                                                      Brightness.dark
-                                                  ? Colors.white
-                                                  : Colors.black,
-                                            )),
+                            Padding(
+                              padding: const EdgeInsets.only(left: 8, right: 8),
+                              child: Table(
+                                columnWidths: const {
+                                  0: FlexColumnWidth(2), // Food Item column
+                                  1: FlexColumnWidth(1), // Quantity column
+                                  2: FlexColumnWidth(1), // Calories column
+                                },
+                                children: [
+                                  // Header Row
+                                  TableRow(
+                                    //decoration: BoxDecoration(color: Colors.blue.shade200),
+                                    children: [
+                                      TableCell(
+                                        child: Padding(
+                                          padding: EdgeInsets.all(8.0),
+                                          child: Text("Food Item",
+                                              style: TextStyle(
+                                                fontWeight: FontWeight.bold,
+                                                color: Theme.of(context)
+                                                            .brightness ==
+                                                        Brightness.dark
+                                                    ? Colors.white
+                                                    : Colors.black,
+                                              )),
+                                        ),
                                       ),
-                                    ),
-                                    TableCell(
-                                      child: Padding(
-                                        padding: EdgeInsets.all(8.0),
-                                        child: Text("Quantity",
-                                            style: TextStyle(
-                                              fontWeight: FontWeight.bold,
-                                              color: Theme.of(context)
-                                                          .brightness ==
-                                                      Brightness.dark
-                                                  ? Colors.white
-                                                  : Colors.black,
-                                            )),
+                                      TableCell(
+                                        child: Padding(
+                                          padding: EdgeInsets.all(8.0),
+                                          child: Text("Quantity",
+                                              style: TextStyle(
+                                                fontWeight: FontWeight.bold,
+                                                color: Theme.of(context)
+                                                            .brightness ==
+                                                        Brightness.dark
+                                                    ? Colors.white
+                                                    : Colors.black,
+                                              )),
+                                        ),
                                       ),
-                                    ),
-                                    TableCell(
-                                      child: Padding(
-                                        padding: EdgeInsets.all(8.0),
-                                        child: Text("Calories",
-                                            style: TextStyle(
-                                              fontWeight: FontWeight.bold,
-                                              color: Theme.of(context)
-                                                          .brightness ==
-                                                      Brightness.dark
-                                                  ? Colors.white
-                                                  : Colors.black,
-                                            )),
+                                      TableCell(
+                                        child: Padding(
+                                          padding: EdgeInsets.all(8.0),
+                                          child: Text("Calories",
+                                              style: TextStyle(
+                                                fontWeight: FontWeight.bold,
+                                                color: Theme.of(context)
+                                                            .brightness ==
+                                                        Brightness.dark
+                                                    ? Colors.white
+                                                    : Colors.black,
+                                              )),
+                                        ),
                                       ),
-                                    ),
-                                  ],
-                                ),
-                                // Data Rows
-                                ...foodList.map((food) => TableRow(
-                                      children: [
-                                        _buildTableCell(food["item"]),
-                                        _buildTableCell(
-                                            food["quantity"].toString()),
-                                        _buildTableCell(
-                                            food["calorie"].toString()),
-                                      ],
-                                    )),
-                              ],
+                                    ],
+                                  ),
+                                  // Data Rows
+                                  ...foodList.map((food) => TableRow(
+                                        children: [
+                                          _buildTableCell(food["item"]),
+                                          _buildTableCell(
+                                              food["quantity"].toString()),
+                                          _buildTableCell(
+                                              food["calorie"].toString()),
+                                        ],
+                                      )),
+                                ],
+                              ),
                             ),
-                          ),
-                          // Padding(
-                          //   padding: const EdgeInsets.only(left: 8, right: 8),
-                          //   child: Table(
-                          //     // border: TableBorder.all(color: Colors.black),
-                          //     columnWidths: const {
-                          //       0: FlexColumnWidth(2), // Food Item column
-                          //       1: FlexColumnWidth(1), // Quantity column
-                          //       2: FlexColumnWidth(1), // Calories column
-                          //     },
-                          //     children: [
-                          //       // Table Header
-                          //       TableRow(
-                          //         //decoration: BoxDecoration(color: Colors.blue.shade200),
-                          //         children: [
-                          //           TableCell(
-                          //             child: Padding(
-                          //               padding: EdgeInsets.all(8.0),
-                          //               child: Text("Food Item",
-                          //                   style: TextStyle(
-                          //                     fontWeight: FontWeight.bold,
-                          //                     color: Theme.of(context).brightness ==
-                          //                             Brightness.dark
-                          //                         ? Colors.white
-                          //                         : Colors.black,
-                          //                   )),
-                          //             ),
-                          //           ),
-                          //           TableCell(
-                          //             child: Padding(
-                          //               padding: EdgeInsets.all(8.0),
-                          //               child: Text("Quantity",
-                          //                   style: TextStyle(
-                          //                     fontWeight: FontWeight.bold,
-                          //                     color: Theme.of(context).brightness ==
-                          //                             Brightness.dark
-                          //                         ? Colors.white
-                          //                         : Colors.black,
-                          //                   )),
-                          //             ),
-                          //           ),
-                          //           TableCell(
-                          //             child: Padding(
-                          //               padding: EdgeInsets.all(8.0),
-                          //               child: Text("Calories",
-                          //                   style: TextStyle(
-                          //                     fontWeight: FontWeight.bold,
-                          //                     color: Theme.of(context).brightness ==
-                          //                             Brightness.dark
-                          //                         ? Colors.white
-                          //                         : Colors.black,
-                          //                   )),
-                          //             ),
-                          //           ),
-                          //         ],
-                          //       ),
-                          //       // Table Rows (Food Data)
-                          //       for (var food in foodData)
-                          //         TableRow(
-                          //           children: [
-                          //             TableCell(
-                          //               child: Padding(
-                          //                 padding: EdgeInsets.all(8.0),
-                          //                 child: Text(
-                          //                   food["item"],
-                          //                   style: TextStyle(
-                          //                     color: Theme.of(context).brightness ==
-                          //                             Brightness.dark
-                          //                         ? Colors.white
-                          //                         : Colors.black,
-                          //                   ),
-                          //                 ),
-                          //               ),
-                          //             ),
-                          //             TableCell(
-                          //               child: Padding(
-                          //                 padding: const EdgeInsets.all(8.0),
-                          //                 child: Text(
-                          //                   food["quantity"],
-                          //                   style: TextStyle(
-                          //                     color: Theme.of(context).brightness ==
-                          //                             Brightness.dark
-                          //                         ? Colors.white
-                          //                         : Colors.black,
-                          //                   ),
-                          //                 ),
-                          //               ),
-                          //             ),
-                          //             TableCell(
-                          //               child: Padding(
-                          //                 padding: const EdgeInsets.all(8.0),
-                          //                 child: Text(
-                          //                   food["calories"],
-                          //                   style: TextStyle(
-                          //                     color: Theme.of(context).brightness ==
-                          //                             Brightness.dark
-                          //                         ? Colors.white
-                          //                         : Colors.black,
-                          //                   ),
-                          //                 ),
-                          //               ),
-                          //             ),
-                          //           ],
-                          //         ),
-                          //     ],
-                          //   ),
-                          // ),
-                        ],
-                      ),
-                    );
-                  }),
-            ],
+                            // Padding(
+                            //   padding: const EdgeInsets.only(left: 8, right: 8),
+                            //   child: Table(
+                            //     // border: TableBorder.all(color: Colors.black),
+                            //     columnWidths: const {
+                            //       0: FlexColumnWidth(2), // Food Item column
+                            //       1: FlexColumnWidth(1), // Quantity column
+                            //       2: FlexColumnWidth(1), // Calories column
+                            //     },
+                            //     children: [
+                            //       // Table Header
+                            //       TableRow(
+                            //         //decoration: BoxDecoration(color: Colors.blue.shade200),
+                            //         children: [
+                            //           TableCell(
+                            //             child: Padding(
+                            //               padding: EdgeInsets.all(8.0),
+                            //               child: Text("Food Item",
+                            //                   style: TextStyle(
+                            //                     fontWeight: FontWeight.bold,
+                            //                     color: Theme.of(context).brightness ==
+                            //                             Brightness.dark
+                            //                         ? Colors.white
+                            //                         : Colors.black,
+                            //                   )),
+                            //             ),
+                            //           ),
+                            //           TableCell(
+                            //             child: Padding(
+                            //               padding: EdgeInsets.all(8.0),
+                            //               child: Text("Quantity",
+                            //                   style: TextStyle(
+                            //                     fontWeight: FontWeight.bold,
+                            //                     color: Theme.of(context).brightness ==
+                            //                             Brightness.dark
+                            //                         ? Colors.white
+                            //                         : Colors.black,
+                            //                   )),
+                            //             ),
+                            //           ),
+                            //           TableCell(
+                            //             child: Padding(
+                            //               padding: EdgeInsets.all(8.0),
+                            //               child: Text("Calories",
+                            //                   style: TextStyle(
+                            //                     fontWeight: FontWeight.bold,
+                            //                     color: Theme.of(context).brightness ==
+                            //                             Brightness.dark
+                            //                         ? Colors.white
+                            //                         : Colors.black,
+                            //                   )),
+                            //             ),
+                            //           ),
+                            //         ],
+                            //       ),
+                            //       // Table Rows (Food Data)
+                            //       for (var food in foodData)
+                            //         TableRow(
+                            //           children: [
+                            //             TableCell(
+                            //               child: Padding(
+                            //                 padding: EdgeInsets.all(8.0),
+                            //                 child: Text(
+                            //                   food["item"],
+                            //                   style: TextStyle(
+                            //                     color: Theme.of(context).brightness ==
+                            //                             Brightness.dark
+                            //                         ? Colors.white
+                            //                         : Colors.black,
+                            //                   ),
+                            //                 ),
+                            //               ),
+                            //             ),
+                            //             TableCell(
+                            //               child: Padding(
+                            //                 padding: const EdgeInsets.all(8.0),
+                            //                 child: Text(
+                            //                   food["quantity"],
+                            //                   style: TextStyle(
+                            //                     color: Theme.of(context).brightness ==
+                            //                             Brightness.dark
+                            //                         ? Colors.white
+                            //                         : Colors.black,
+                            //                   ),
+                            //                 ),
+                            //               ),
+                            //             ),
+                            //             TableCell(
+                            //               child: Padding(
+                            //                 padding: const EdgeInsets.all(8.0),
+                            //                 child: Text(
+                            //                   food["calories"],
+                            //                   style: TextStyle(
+                            //                     color: Theme.of(context).brightness ==
+                            //                             Brightness.dark
+                            //                         ? Colors.white
+                            //                         : Colors.black,
+                            //                   ),
+                            //                 ),
+                            //               ),
+                            //             ),
+                            //           ],
+                            //         ),
+                            //     ],
+                            //   ),
+                            // ),
+                          ],
+                        ),
+                      );
+                    }),
+              ],
+            ),
           ),
         ),
       ),
